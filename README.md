@@ -1,1 +1,3 @@
-TO DO
+- Run create_db.py to create the database
+- Run api.py
+- Run test.py
