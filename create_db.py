@@ -18,12 +18,34 @@ class VolunteerModel(db.Model):
     surname = db.Column(db.String(30), nullable=False)  # 30 is max length
 
 
+class HomelessModel(db.Model):
+    id = db.Column(db.Integer, primary_key=True, nullable=False)
+    forename = db.Column(db.String(30), nullable=False)
+    surname = db.Column(db.String(30), nullable=True)
+
+
 class MaraudeModel(db.Model):
     id = db.Column(db.Integer, primary_key=True, nullable=False)
-    volunteer_0 = db.Column(db.Integer, nullable=False)
-    volunteer_1 = db.Column(db.Integer, nullable=True)
-    volunteer_2 = db.Column(db.Integer, nullable=True)
-    volunteer_3 = db.Column(db.Integer, nullable=True)
+    year = db.Column(db.Integer, nullable=False)
+    month = db.Column(db.Integer, nullable=True)
+    day = db.Column(db.Integer, nullable=True)
+
+
+class ParticipationModel(db.Model):
+    id = db.Column(db.Integer, primary_key=True, nullable=False)
+    volunteer_id = db.Column(db.Integer, nullable=False)
+    maraude_id = db.Column(db.Integer, nullable=False)
+
+
+class EncounterModel(db.Model):
+    id = db.Column(db.Integer, primary_key=True, nullable=False)
+    homeless_id = db.Column(db.Integer, nullable=False)
+    maraude_id = db.Column(db.Integer, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
+    latitude = db.Column(db.Float, nullable=False)
+    hour = db.Column(db.Integer, nullable=False)
+    minute = db.Column(db.Integer, nullable=False)
+    comment = db.Column(db.String(200), nullable=False)
 
 
 db.create_all()  # Initialize the database

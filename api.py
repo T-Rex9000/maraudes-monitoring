@@ -2,10 +2,11 @@ from flask import Flask
 from flask_restful import Resource, Api, fields, marshal_with, abort
 from flask_sqlalchemy import SQLAlchemy
 
-# from gpx_utils import parse_gpx, get_points_from_gpx
+from gpx_utils import get_date
 from os.path import join, dirname, abspath
-from create_db import MaraudeModel, VolunteerModel
-from arg_parsers import volunteer_put_arg_parser, maraude_put_arg_parser
+from create_db import MaraudeModel, VolunteerModel, ParticipationModel, HomelessModel, EncounterModel
+from arg_parsers import volunteer_put_arg_parser, participation_put_arg_parser, homeless_put_arg_parser, \
+    encounter_put_arg_parser
 
 # Create API and load DB
 app = Flask(__name__)
@@ -24,12 +25,34 @@ volunteer_resource_fields = {
     "forename": fields.String
 }
 
+homeless_resource_fields = {
+    "id": fields.Integer,
+    "surname": fields.String,
+    "forename": fields.String
+}
+
 maraude_resource_fields = {
     "id": fields.Integer,
-    "volunteer_0": fields.Integer,
-    "volunteer_1": fields.Integer,
-    "volunteer_2": fields.Integer,
-    "volunteer_3": fields.Integer,
+    "year": fields.Integer,
+    "month": fields.Integer,
+    "day": fields.Integer,
+}
+
+participation_resource_fields = {
+    "id": fields.Integer,
+    "volunteer_id": fields.Integer,
+    "maraude_id": fields.Integer,
+}
+
+encounter_resource_fields = {
+    "id": fields.Integer,
+    "homeless_id": fields.Integer,
+    "maraude_id": fields.Integer,
+    "longitude": fields.Float,
+    "latitude": fields.Float,
+    "hour": fields.Integer,
+    "minute": fields.Integer,
+    "comment": fields.String,
 }
 
 
@@ -67,6 +90,35 @@ class VolunteerResource(Resource):
         pass
 
 
+class HomelessResource(Resource):
+    @marshal_with(homeless_resource_fields)
+    def get(self, homeless_id):
+        homeless = HomelessModel.query.filter_by(id=homeless_id).first()
+        if not homeless:
+            abort(404, message="Can not find the requested homeless id")
+        return homeless, 200
+
+    @marshal_with(homeless_resource_fields)
+    def put(self, homeless_id):
+        homeless = HomelessModel.query.filter_by(id=homeless_id).first()
+        if homeless:
+            abort(409, message="Homeless id already exists")
+
+        args = homeless_put_arg_parser.parse_args()
+
+        homeless = HomelessModel(
+            id=homeless_id,
+            forename=args["forename"],
+            surname=args["surname"],
+        )
+        db.session.add(homeless)
+        db.session.commit()
+        return homeless, 201
+
+    def delete(self):
+        pass
+
+
 class MaraudeResource(Resource):
     @marshal_with(maraude_resource_fields)
     def get(self, maraude_id):
@@ -81,14 +133,13 @@ class MaraudeResource(Resource):
         if maraude:
             abort(409, message="Maraude id already exists")
 
-        args = maraude_put_arg_parser.parse_args()
+        date = get_date()
 
         maraude = MaraudeModel(
             id=maraude_id,
-            volunteer_0=args["volunteer_0"],
-            volunteer_1=args["volunteer_1"],
-            volunteer_2=args["volunteer_2"],
-            volunteer_3=args["volunteer_3"]
+            year=int(date.year),
+            month=int(date.month),
+            day=int(date.day)
         )
         db.session.add(maraude)
         db.session.commit()
@@ -98,9 +149,77 @@ class MaraudeResource(Resource):
         pass
 
 
+class ParticipationResource(Resource):
+    @marshal_with(participation_resource_fields)
+    def get(self, participation_id):
+        participation = ParticipationModel.query.filter_by(id=participation_id).first()
+        if not participation:
+            abort(404, message="Can not find the requested participation id")
+        return participation, 200
+
+    @marshal_with(participation_resource_fields)
+    def put(self, participation_id):
+        participation = ParticipationModel.query.filter_by(id=participation_id).first()
+        if participation:
+            abort(409, message="Participation id already exists")
+
+        args = participation_put_arg_parser.parse_args()
+
+        participation = ParticipationModel(
+            id=participation_id,
+            volunteer_id=args["volunteer_id"],
+            maraude_id=args["maraude_id"]
+        )
+        db.session.add(participation)
+        db.session.commit()
+        return participation, 201
+
+    def delete(self):
+        pass
+
+
+class EncounterResource(Resource):
+    @marshal_with(encounter_resource_fields)
+    def get(self, encounter_id):
+        encounter = EncounterModel.query.filter_by(id=encounter_id).first()
+        if not encounter:
+            abort(404, message="Can not find the requested encounter id")
+        return encounter, 200
+
+    @marshal_with(encounter_resource_fields)
+    def put(self, encounter_id):
+        encounter = EncounterModel.query.filter_by(id=encounter_id).first()
+        if encounter:
+            abort(409, message="Encounter id already exists")
+
+        date = get_date()
+
+        args = encounter_put_arg_parser.parse_args()
+
+        encounter = EncounterModel(
+            id=encounter_id,
+            homeless_id=args["homeless_id"],
+            maraude_id=args["maraude_id"],
+            latitude=args["latitude"],
+            longitude=args["longitude"],
+            comment=args["comment"],
+            hour=int(date.hour),
+            minute=int(date.minute)
+        )
+        db.session.add(encounter)
+        db.session.commit()
+        return encounter, 201
+
+    def delete(self):
+        pass
+
+
 # Add ressources to the API
 api.add_resource(VolunteerResource, '/volunteer/<string:volunteer_id>')
 api.add_resource(MaraudeResource, '/maraude/<string:maraude_id>')
+api.add_resource(ParticipationResource, '/participation/<string:participation_id>')
+api.add_resource(HomelessResource, '/homeless/<string:homeless_id>')
+api.add_resource(EncounterResource, '/encounter/<string:encounter_id>')
 
 if __name__ == '__main__':
     app.run(debug=True)

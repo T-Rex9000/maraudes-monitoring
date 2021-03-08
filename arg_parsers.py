@@ -14,28 +14,62 @@ volunteer_put_arg_parser.add_argument(
     required=True
 )
 
-maraude_put_arg_parser = reqparse.RequestParser()
-maraude_put_arg_parser.add_argument(
-    name="volunteer_0",
-    type=int,
-    help="Volunteer id of the first volunteer",
+homeless_put_arg_parser = reqparse.RequestParser()
+homeless_put_arg_parser.add_argument(
+    name="forename",
+    type=str,
+    help="Forename",
     required=True
 )
-maraude_put_arg_parser.add_argument(
-    name="volunteer_1",
-    type=int,
-    help="Volunteer id of the second volunteer",
+homeless_put_arg_parser.add_argument(
+    name="surname",
+    type=str,
+    help="Surname",
     required=False
 )
-maraude_put_arg_parser.add_argument(
-    name="volunteer_2",
+
+participation_put_arg_parser = reqparse.RequestParser()
+participation_put_arg_parser.add_argument(
+    name="volunteer_id",
     type=int,
-    help="Volunteer id of the third volunteer",
-    required=False
+    help="Id of the volunteer",
+    required=True
 )
-maraude_put_arg_parser.add_argument(
-    name="volunteer_3",
+participation_put_arg_parser.add_argument(
+    name="maraude_id",
     type=int,
-    help="Volunteer id of the fourth volunteer",
+    help="Id of the maraude",
+    required=True
+)
+
+encounter_put_arg_parser = reqparse.RequestParser()
+encounter_put_arg_parser.add_argument(
+    name="homeless_id",
+    type=int,
+    help="Id of the homeless person",
+    required=True
+)
+encounter_put_arg_parser.add_argument(
+    name="maraude_id",
+    type=int,
+    help="Id of the maraude",
+    required=True
+)
+encounter_put_arg_parser.add_argument(
+    name="longitude",
+    type=float,
+    help="Encounter longitude",
+    required=True
+)
+encounter_put_arg_parser.add_argument(
+    name="latitude",
+    type=float,
+    help="Encounter latitude",
+    required=True
+)
+encounter_put_arg_parser.add_argument(
+    name="comment",
+    type=str,
+    help="Comment about the encounter",
     required=False
 )

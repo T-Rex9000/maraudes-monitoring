@@ -1,4 +1,11 @@
 import gpxpy
+from datetime import datetime
+
+
+def get_date(
+):
+    return datetime.now()
+
 
 def parse_gpx(
         path
